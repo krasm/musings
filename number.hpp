@@ -1,7 +1,5 @@
 
 #include <iostream>
-#include <cassert>
-#include <cstring>
 
 namespace {
     int32_t max(int32_t l, int32_t r) {
@@ -23,7 +21,7 @@ public:
     number_t(const char * digits_, int32_t n)
         : negative(false), start(0), end(n-1)
     {
-        assert(end >= 0);
+        //assert(end >= 0);
         digits = new int8_t[n];
         for(int32_t i = start; i <= end; i++) {
             // no error checking - assuming that all input is correct
@@ -31,7 +29,7 @@ public:
                 digits[i] = digits_[i] - '0';
             else
                 digits[i] = 10 + (digits_[i] - 'A');
-            assert(digits[i] >= 0 and digits[i] < BASE);
+            //assert(digits[i] >= 0 and digits[i] < BASE);
         }
     }
 
@@ -102,6 +100,7 @@ public:
         for(int i = 0; i < size(); i++) {
             out[j++] = to_printable(digits[start+i]);
         }
+	out[j] = '\0';
     }
 
     number_t multByPowerOfBase(int n) const {
@@ -142,7 +141,7 @@ public:
 	if(lhs.is_negative() and not rhs.is_negative()) {
 	    number_t r = lhs;
 	    r.negative = false;
-	    result = lhs - r;
+	    result = r - rhs;
 	    if(result.is_negative())
 		result.negative = false;
 	    else
@@ -194,7 +193,7 @@ public:
                 carry = t >= BASE;
                 result.digits[i] = t % BASE;
             }
-            assert(carry == false);
+            //assert(carry == false);
         } else {
             for(int32_t i = result.end; i >= result.start; i--) {
                 result.digits[i] = (BASE - 1) - result.digits[i];

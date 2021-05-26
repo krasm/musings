@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include <catch2/catch.hpp>
+#include <string.h>
 #include <number.hpp>
 
 TEST_CASE("copy operator") {
@@ -37,7 +38,6 @@ TEST_CASE("addition an example") {
     number_t<10> r("016", 3);
 
     REQUIRE(l+r == number_t<10>("016", 3));
-
 }
 
 TEST_CASE("addition negative numbers 1") {
@@ -61,6 +61,16 @@ TEST_CASE("addition negative numbers 2") {
     REQUIRE(number_t<10>("44", 2) == result);
     REQUIRE(result.is_negative());
 }
+
+TEST_CASE("addition negative numbers 3") {
+    number_t<10> l = number_t<10>("0", 1) - number_t<10>("13", 2);
+    number_t<10> r = number_t<10>("57", 2);
+    number_t<10> result = l + r;
+
+    REQUIRE(number_t<10>("44", 2) == result);
+    REQUIRE(not result.is_negative());
+}
+
 
 TEST_CASE("complement1") {
     number_t<10> n("678", 3);
@@ -202,5 +212,27 @@ TEST_CASE("multiplication and addition", "[mult]") {
     REQUIRE((l-r).is_negative());
     REQUIRE(not (l+r).is_negative());
     REQUIRE(number_t<10>("53000", 5) == res);
+    REQUIRE(res.is_negative());
+}
+
+TEST_CASE("big numbers 1", "[mult]") {
+    number_t<10> l{"1357924681", 10}; // 18F0IA9
+    number_t<10> r{"3579135792463", 13}; // 385AHS5AF
+    number_t<10> res = (l + r) * (l - r);
+
+    REQUIRE((l-r).is_negative());
+    REQUIRE(not (l+r).is_negative());
+    REQUIRE(number_t<10>("12810211176930307738654608", 26) == res); // AJ2LF0V4QEPC6ULSG
+    REQUIRE(res.is_negative());
+}
+
+TEST_CASE("big numbers 1 (32base)", "[mult]") {
+    number_t<32> l{"18F0IA9", 7}; // 18F0IA9
+    number_t<32> r{"385AHS5AF", 9}; // 385AHS5AF
+    number_t<32> res = (l + r) * (l - r);
+
+    REQUIRE((l-r).is_negative());
+    REQUIRE(not (l+r).is_negative());
+    REQUIRE(number_t<32>("AJ2LF0V4QEPC6ULSG", 17) == res); // AJ2LF0V4QEPC6ULSG
     REQUIRE(res.is_negative());
 }
