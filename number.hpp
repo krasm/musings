@@ -92,6 +92,16 @@ public:
         return negative;
     }
 
+    void print_to(char * out) {
+        int j = 0;
+        if(is_negative()) {
+            out[j++] = '-';
+        }
+        for(int i = 0; i < size(); i++) {
+            out[j++] = to_printable(digits[start+i]);
+        }
+    }
+
     number_t multByPowerOfBase(int n) const {
         number_t result(size() + n);
         for(int32_t i = 0; i < size(); i++) 
@@ -104,9 +114,9 @@ public:
         if(size() < m) 
             return number_t(0);
 
-        number_t result(m);
-        for(int32_t i = 0; i < m; i++) {
-            result.digits[i] = digits[i];
+        number_t result(size() - m);
+        for(int32_t i = result.end, j = end - m; i >= result.start; i--, j--) {
+            result.digits[i] = digits[j];
         }
 
         return result;
@@ -115,9 +125,9 @@ public:
     number_t lowerHalf(int32_t m) const {
         if(size() < m)
             return *this;
-        number_t result(size() - m);
-        for(int32_t i = m; i < size(); i++) {
-            result.digits[i-m] = digits[i];
+        number_t result(m);
+        for(int32_t i = result.end, j = end; i >= result.start; i--, j--) {
+            result.digits[i] = digits[j];
         }
         return result;
     }
@@ -227,9 +237,10 @@ public:
     static number_t mult(const number_t & single, const number_t & rhs) {
         number_t result(rhs.size() + 1);
         int32_t carry = 0;
-        for(int32_t i = rhs.end; i >= rhs.start; i--) {
+
+        for(int32_t i = rhs.end, j = result.end; i >= rhs.start; i--, j--) {
             int32_t t = rhs.digits[i] * single.digits[single.end];
-            result.digits[i] = (t + carry) % BASE;
+            result.digits[j] = (t + carry) % BASE;
             carry = (t + carry) / BASE;
         }
         result.digits[0] = carry;
@@ -242,55 +253,23 @@ public:
         return result;
     }
 
+    static char to_printable(int8_t d) {
+        if(d < 10) {
+            return (char)('0' + d);
+        } else{
+            return (char)('A' + (d - 10));
+        }
+    }
 
     friend std::ostream & operator<<(std::ostream & out, const number_t & num) {
         if(num.negative) {
             out << "-";
         }
         for(int32_t i = num.start; i <= num.end; i++) {
-            if(num.digits[i] < 10)
-                out << (char)('0' + num.digits[i]);
-            else
-                out << (char)('A' + (num.digits[i] - 10));
+            out << to_printable(num.digits[i]);
         }
 
         return out;
     }
 };
 
-#if 0
-int main(int argc, char * argv[]) {
-    if(argc > 2) {
-        number_t l(argv[1], strlen(argv[1]));
-        number_t r(argv[2], strlen(argv[2]));
-        int pow = (argc > 3) ? atoi(argv[3]) : 0;
-        number_t s = l+r;
-
-        //std::cout << "complement of " << l << " == " << l.complement() << std::endl;
-        //std::cout << "complement of " << r << " == " << r.complement() << std::endl;
-
-        std::cout << l << " < " << r << " is " << std::boolalpha << (l < r) << std::endl;
-        std::cout << l << " == " << r << " is " << std::boolalpha << (l == r) << std::endl;
-
-        std::cout << l << " + " << r << " == " << s  << std::endl;
-        std::cout << l << " * " << r << " == " << (l * r)  << std::endl;
-        std::cout << l << " - " << r << " == " << (l - r) << std::endl;
-    
-
-        std::cout << "lower half of " << l << " is " << l.lowerHalf(l.size() / 2) << std::endl; 
-        std::cout << "upper half of " << l << " is " << l.upperHalf(l.size() / 2) << std::endl; 
-        std::cout << "lower half of " << r << " is " << r.lowerHalf(r.size() / 2) << std::endl; 
-        std::cout << "upper half of " << r << " is " << r.upperHalf(r.size() / 2) << std::endl; 
-
-        std::cout << l << " ** 10^" << pow << " == " << l.multByPowerOfBase(pow) << std::endl;
-        std::cout << r << " ** 10^" << pow << " == " << r.multByPowerOfBase(pow) << std::endl;
-
-        std::cout << s << " - " << r << " == " << (s - r) << std::endl;
-        std::cout << s << " - " << l << " == " << (s - l) << std::endl;
-
-        std::cout << s << " - " << l << " + " << l << " == " << ((s - l) + l) << std::endl;
-    }
-
-    return 0;
-}
-#endif
