@@ -1,0 +1,2 @@
+# musings
+playing with algos
