@@ -104,14 +104,14 @@ public:
 
     number_t multByPowerOfBase(int n) const {
         number_t result(size() + n);
-        for(int32_t i = 0; i < size(); i++) 
+        for(int32_t i = 0; i < size(); i++)
             result.digits[result.start + i] = digits[start+i];
 
         return result;
     }
 
     number_t upperHalf(int32_t m) const {
-        if(size() < m) 
+        if(size() < m)
             return number_t(0);
 
         number_t result(size() - m);
@@ -137,31 +137,47 @@ public:
         number_t result(n+1);
         bool carry = false;
 
-        int32_t k = result.end;
-        int32_t i = lhs.end;
-        int32_t j = rhs.end;
-        for(; i >= lhs.start and j >= rhs.start; i--, j--) {
-            int8_t tmp = (carry ? 1 : 0) + lhs.digits[i] + rhs.digits[j];
-            carry = (tmp / BASE) > 0;
-            tmp = tmp % BASE;
-            result.digits[k--] = tmp;
-        }
-        for(; i >= lhs.start; i--) {
-            int8_t tmp = (carry ? 1 : 0) + lhs.digits[i];
-            carry = (tmp / BASE) == 1;
-            tmp = tmp % BASE;
-            result.digits[k--] = tmp;
-        }
-        for(; j >= rhs.start; j--) {
-            int8_t tmp = (carry ? 1 : 0) + rhs.digits[j];
-            carry = (tmp / BASE) == 1;
-            tmp = tmp % BASE;
-            result.digits[k--] = tmp;
-        }
+	if(lhs.is_negative() and not rhs.is_negative()) {
+	    number_t r = lhs;
+	    r.negative = false;
+	    result = lhs - r;
+	    if(result.is_negative())
+		result.negative = false;
+	    else
+		result.negative = true;
+	} else if(not lhs.is_negative() and rhs.is_negative()) {
+	    number_t r = rhs;
+	    r.negative = false;
+	    result = lhs - r;
+	} else {
+	    int32_t k = result.end;
+	    int32_t i = lhs.end;
+	    int32_t j = rhs.end;
+	    for(; i >= lhs.start and j >= rhs.start; i--, j--) {
+		int8_t tmp = (carry ? 1 : 0) + lhs.digits[i] + rhs.digits[j];
+		carry = (tmp / BASE) > 0;
+		tmp = tmp % BASE;
+		result.digits[k--] = tmp;
+	    }
+	    for(; i >= lhs.start; i--) {
+		int8_t tmp = (carry ? 1 : 0) + lhs.digits[i];
+		carry = (tmp / BASE) == 1;
+		tmp = tmp % BASE;
+		result.digits[k--] = tmp;
+	    }
+	    for(; j >= rhs.start; j--) {
+		int8_t tmp = (carry ? 1 : 0) + rhs.digits[j];
+		carry = (tmp / BASE) == 1;
+		tmp = tmp % BASE;
+		result.digits[k--] = tmp;
+	    }
 
-        result.digits[0] = (carry ? 1 : 0);
-        result.start = (carry ? 0 : 1);
+	    result.digits[0] = (carry ? 1 : 0);
+	    result.start = (carry ? 0 : 1);
 
+	    if(rhs.is_negative() and lhs.is_negative())
+		result.negative = true;
+	}
         return result;
     }
 
@@ -185,6 +201,7 @@ public:
         }
         result.digits[0] = 0;
         result.start = 1;
+
         return result;
     }
 
@@ -247,8 +264,8 @@ public:
         if(carry == 0)
             result.start = 1;
         // TODO check signs
-        result.negative = not ((not single.negative and not rhs.negative)
-            or (single.negative and rhs.negative));
+        result.negative = (not single.negative and rhs.negative)
+            or (single.negative and  not rhs.negative);
 
         return result;
     }
@@ -272,4 +289,3 @@ public:
         return out;
     }
 };
-

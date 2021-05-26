@@ -27,6 +27,28 @@ TEST_CASE("addition an example") {
 
 }
 
+TEST_CASE("addition negative numbers 1") {
+    number_t<10> l = number_t<10>("0", 1) - number_t<10>("13", 2);
+    number_t<10> r = number_t<10>("0", 1) - number_t<10>("57", 2);
+    number_t<10> result = l + r;
+
+    REQUIRE(l.is_negative());
+    REQUIRE(r.is_negative());
+    REQUIRE(result.is_negative());
+    REQUIRE(number_t<10>("70", 2) == result);
+}
+
+TEST_CASE("addition negative numbers 2") {
+    number_t<10> l = number_t<10>("13", 2);
+    number_t<10> r = number_t<10>("0", 1) - number_t<10>("57", 2);
+    number_t<10> result = l + r;
+
+    REQUIRE(r.is_negative());
+    REQUIRE(number_t<10>("57", 2) == r);
+    REQUIRE(number_t<10>("47", 2) == result);
+    REQUIRE(result.is_negative());
+}
+
 TEST_CASE("complement1") {
     number_t<10> n("678", 3);
     REQUIRE(n.complement() == number_t<10>("321", 3));
@@ -154,6 +176,8 @@ TEST_CASE("multiplication and addition", "[mult]") {
     number_t<10> r{"231", 3};
     number_t<10> res = (l + r) * (l - r);
 
+    REQUIRE((l-r).is_negative());
+    REQUIRE(not (l+r).is_negative());
     REQUIRE(number_t<10>("53000", 5) == res);
     REQUIRE(res.is_negative());
 }
