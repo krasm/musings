@@ -3,6 +3,19 @@
 #include <catch2/catch.hpp>
 #include <number.hpp>
 
+TEST_CASE("copy operator") {
+    number_t<10> l = number_t<10>("135792468", 9);
+    number_t<10> r = l;
+    REQUIRE(l == r);
+}
+
+TEST_CASE("copy operator 1") {
+    number_t<10> l = number_t<10>("57", 2);
+    number_t<10> r = l;
+    REQUIRE(number_t<10>("57", 2) == r);
+}
+
+
 TEST_CASE("addition") {
     number_t<10> l("2345", 4);
     number_t<10> r("678", 3);
@@ -45,7 +58,7 @@ TEST_CASE("addition negative numbers 2") {
 
     REQUIRE(r.is_negative());
     REQUIRE(number_t<10>("57", 2) == r);
-    REQUIRE(number_t<10>("47", 2) == result);
+    REQUIRE(number_t<10>("44", 2) == result);
     REQUIRE(result.is_negative());
 }
 
@@ -81,6 +94,16 @@ TEST_CASE("simple subsctraction 1") {
     REQUIRE(actual == number_t<10>("1667", 4));
     REQUIRE(actual.is_negative());
 }
+
+TEST_CASE("simple subsctraction 2") {
+    number_t<10> l("13", 2);
+    number_t<10> r("57", 2);
+    number_t<10> actual = l - r;
+
+    REQUIRE(actual == number_t<10>("44", 2));
+    REQUIRE(actual.is_negative());
+}
+
 
 TEST_CASE("substraction from zero") {
     number_t<10> l("0", 1);

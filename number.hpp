@@ -48,8 +48,9 @@ public:
     {
         digits = new int8_t[other.size()];
         for(int32_t i = 0; i < size(); i++) {
-            digits[i] = other.digits[i];
+            digits[i] = other.digits[other.start+i];
         }
+	negative = other.is_negative();
     }
 
     ~number_t() {
@@ -62,9 +63,10 @@ public:
             digits = new int8_t[other.size()];
             start = 0;
             end = other.size() - 1;
-            for(int32_t i = other.start, j = 0; j <= end; i++, j++) {
+            for(int32_t i = other.start, j = 0; i <= other.end; i++, j++) {
                 digits[j] = other.digits[i];
             }
+	    negative = other.is_negative();
         }
         return *this;
     }
@@ -194,7 +196,7 @@ public:
             }
             assert(carry == false);
         } else {
-            for(int32_t i = result.end; i > 0; i--) {
+            for(int32_t i = result.end; i >= result.start; i--) {
                 result.digits[i] = (BASE - 1) - result.digits[i];
             }
             result.negative = true;
@@ -247,7 +249,10 @@ public:
             number_t z1 = (a+b) * (c+d);
             number_t z2 = a * c;
 
-            return z2.multByPowerOfBase(2 * m2) + (z1-z2-z0).multByPowerOfBase(m2) + z0;
+            number_t result = z2.multByPowerOfBase(2 * m2) + (z1-z2-z0).multByPowerOfBase(m2) + z0;
+	    result.negative = (lhs.negative and not rhs.negative) or (not lhs.negative and rhs.negative);
+
+	    return result;
         }
     }
 
