@@ -18,18 +18,28 @@ class number_t {
     int32_t end;
 
 public:
+    number_t()
+	: negative(false), digits(0), start(0), end(0)
+	{}
+
     number_t(const char * digits_, int32_t n)
         : negative(false), start(0), end(n-1)
     {
-        //assert(end >= 0);
-        digits = new int8_t[n];
+	digits = new int8_t[n];
+	if(digits_[0] == '-') {
+	    negative = true;
+	    start = 1;
+	} else if(digits_[0] == '+') {
+	    negative = false;
+	    start = 1;
+	}
+
         for(int32_t i = start; i <= end; i++) {
             // no error checking - assuming that all input is correct
             if(digits_[i] <= '9')
                 digits[i] = digits_[i] - '0';
             else
                 digits[i] = 10 + (digits_[i] - 'A');
-            //assert(digits[i] >= 0 and digits[i] < BASE);
         }
     }
 
@@ -98,6 +108,8 @@ public:
             out[j++] = '-';
         }
         for(int i = 0; i < size(); i++) {
+	    if(digits[start+i] == 0)
+		continue;
             out[j++] = to_printable(digits[start+i]);
         }
 	out[j] = '\0';
@@ -183,9 +195,33 @@ public:
     }
 
     friend number_t operator-(const number_t & lhs, const number_t & rhs) {
-        int32_t n = max(lhs.size(), rhs.size());
-        number_t result = lhs + rhs.complement(n);
+	number_t l, r, result;
+	if(lhs.is_negative() and rhs.is_negative()) {
+	    // ==> rhs - lhs
+	    l = rhs; l.negative = false;
+	    r = lhs; r.negative = false;
+	} else if(lhs.is_negative() and not rhs.is_negative()) {
+	    // - (lhs + rhs)
+	    l = rhs; l.negative = false;
+	    r = lhs; r.negative = false;
+	    result = l+r;
+	    result.negative = true;
+	    return result;
+	} else if(not lhs.is_negative() and rhs.is_negative()) {
+	    // lhs + rhs
+	    l = lhs; l.negative = false;
+	    r = rhs; r.negative = false;
+	    result = l+r;
+	    result.negative = false;
+	    return result;
+	} else { // not lhs.is_negative() and not rhs.is_negative()
+	    // lhs - rhs
+	    l = lhs; l.negative = false;
+	    r = rhs; r.negative = false;
+	}
 
+        int32_t n = max(lhs.size(), rhs.size());
+	result = l + r.complement(n);
         if(result.digits[0] == 1) {
             bool carry = true;
             for(int32_t i = result.end; i > 0; i--) {
@@ -193,7 +229,6 @@ public:
                 carry = t >= BASE;
                 result.digits[i] = t % BASE;
             }
-            //assert(carry == false);
         } else {
             for(int32_t i = result.end; i >= result.start; i--) {
                 result.digits[i] = (BASE - 1) - result.digits[i];
@@ -231,9 +266,9 @@ public:
     }
 
     friend number_t operator*(const number_t & lhs, const number_t & rhs) {
-        if(lhs.size() == 1) {
+        if(lhs.size() <= 1) {
             return mult(lhs, rhs);
-        } else if(rhs.size() == 1) {
+        } else if(rhs.size() <= 1) {
             return mult(rhs, lhs);
         } else {
             int32_t m = min(lhs.size(), rhs.size());

@@ -154,25 +154,18 @@ TEST_CASE("multiplication 2", "[mult]") {
 }
 
 TEST_CASE("multiplication 3", "[mult]") {
-    number_t<10> l("5", 1);
-    number_t<10> r("6", 1);
-    number_t<10> zero("0", 1);
-    number_t<10> actual = (zero - l) * (zero - r);
-    REQUIRE(actual == number_t<10>("30", 2));
-    REQUIRE(not actual.is_negative());
-    actual = (zero - r) * (zero - l);
+    number_t<10> l("-5", 2);
+    number_t<10> r("-6", 2);
+    number_t<10> actual = l * r;
+
     REQUIRE(actual == number_t<10>("30", 2));
     REQUIRE(not actual.is_negative());
 }
 
 TEST_CASE("multiplication 4", "[mult]") {
-    number_t<10> l("5", 1);
+    number_t<10> l("-5", 2);
     number_t<10> r("6", 1);
-    number_t<10> zero("0", 1);
-    number_t<10> actual = (zero - l) * r;
-    REQUIRE(actual == number_t<10>("30", 2));
-    REQUIRE(actual.is_negative());
-    actual = (zero - r) * l;
+    number_t<10> actual = l * r;
     REQUIRE(actual == number_t<10>("30", 2));
     REQUIRE(actual.is_negative());
 }
@@ -235,4 +228,60 @@ TEST_CASE("big numbers 1 (32base)", "[mult]") {
     REQUIRE(not (l+r).is_negative());
     REQUIRE(number_t<32>("AJ2LF0V4QEPC6ULSG", 17) == res); // AJ2LF0V4QEPC6ULSG
     REQUIRE(res.is_negative());
+}
+
+TEST_CASE("big numbers 2 (32base)", "[mult]") {
+    number_t<32> l{"14PC0MJ", 7};
+    number_t<32> r{"TDSQ5H", 6};
+    number_t<32> res = l * r;
+
+    REQUIRE(number_t<32>("AI967FIRV491T", 13) == res);
+    REQUIRE(not res.is_negative());
+}
+
+TEST_CASE("big numbers 2 (10base)", "[mult]") {
+    number_t<10> l{"1234567891", 10};
+    number_t<10> r{"987654321", 9};
+    number_t<10> res = (l + r) * (l - r);
+
+    REQUIRE(number_t<10>("0548696819698216840", 19) == res);
+    REQUIRE(not res.is_negative());
+}
+
+TEST_CASE("mult_a", "[mult]") {
+    number_t<10> l = number_t<10>{"123456789123456789123456789", 27};
+    number_t<10> r = number_t<10>{"851", 3};
+    number_t<10> res = l * r;
+
+    REQUIRE(number_t<10>{"105061727544061727544061727439", 30} == res);
+}
+
+TEST_CASE("mult_b", "[mult]") {
+    number_t<32> l = number_t<32>{"363RUV5OTHJTU08NOL", 18};  // 123456789123456789123456789
+    number_t<32> r = number_t<32>{"QJ", 2};                   // 851
+    number_t<32> res = l * r;
+
+    REQUIRE(res == number_t<32>{"2KRP0ON6LPRL5518G4MF", 20}); //  105061727544061721869293715456
+}
+
+TEST_CASE("mult_c", "[mult]") {
+    number_t<32> l{"4I7", 3};
+    number_t<32> r{"93", 2};
+    number_t<32> res = l * r;
+
+    REQUIRE(res == number_t<32>{"19HLL", 5});
+}
+
+const char * l = "1265828374914119790432443892245057448670781343822578314415759138479792925121170886498844789659382033346086056733662147807962998398729004339782236795968138704985198637211742210131597281901737837500857402398952983171640143499750388529120062733164109205";
+
+const char * r = "7358962464594238631920301985037411448944675896428422499770454955441471864955969199908607778539748771241223112222964042489519660108266830409793540041254201127727724812109964048481907106805212095348248297828065464619022448330620883612305083852382524015";
+
+const char * expected = "9315183497611330883146766583804165932087484831792626108317011103375088254951213374405863278113105530481553699528875570843645745570938639788785975040219956587540836292710471590081885761045661035777138286960146359698138152794937162948804354382435627616719452135777975248653743553516421822072790702790880837453106793585313806904958156208312507080531653121505899645703622407320200143380842634765748867685513146077982120070558752613216065513118741815905516975577750891684634989047153858151866366995058075";
+
+TEST_CASE("mult_d", "[mult]") {
+    number_t<10> ll{l, strlen(l) - 1};
+    number_t<10> rr{r, strlen(r) - 1};
+    number_t<10> res = ll * rr;
+
+    REQUIRE(number_t<10>{expected, strlen(expected) - 1} == res);
 }
