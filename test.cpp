@@ -89,14 +89,14 @@ TEST_CASE("complement0") {
 }
 
 
-TEST_CASE("simple subsctraction") {
+TEST_CASE("simple subsctraction", "[sub]") {
     number_t<10> l("2345", 4);
     number_t<10> r("678", 3);
 
     REQUIRE(l-r == number_t<10>("1667", 4));
 }
 
-TEST_CASE("simple subsctraction 1") {
+TEST_CASE("simple subsctraction 1", "[sub]") {
     number_t<10> l("2345", 4);
     number_t<10> r("678", 3);
     number_t<10> actual = r-l;
@@ -105,7 +105,7 @@ TEST_CASE("simple subsctraction 1") {
     REQUIRE(actual.is_negative());
 }
 
-TEST_CASE("simple subsctraction 2") {
+TEST_CASE("simple subsctraction 2", "[sub]") {
     number_t<10> l("13", 2);
     number_t<10> r("57", 2);
     number_t<10> actual = l - r;
@@ -115,7 +115,7 @@ TEST_CASE("simple subsctraction 2") {
 }
 
 
-TEST_CASE("substraction from zero") {
+TEST_CASE("substraction from zero", "[sub]") {
     number_t<10> l("0", 1);
     number_t<10> r("678", 3);
     number_t<10> actual = l - r;
@@ -123,7 +123,7 @@ TEST_CASE("substraction from zero") {
     REQUIRE(actual.is_negative());
 }
 
-TEST_CASE("substraction from zero 1") {
+TEST_CASE("substraction from zero 1", "[sub]") {
     number_t<10> l("0", 1);
     number_t<10> r("8", 1);
     number_t<10> actual = l - r;
@@ -131,12 +131,20 @@ TEST_CASE("substraction from zero 1") {
     REQUIRE(actual.is_negative());
 }
 
-TEST_CASE("substracting zero") {
+TEST_CASE("substracting zero", "[sub]") {
     number_t<10> l("0", 1);
     number_t<10> r("678", 3);
     number_t<10> actual = r - l;
     REQUIRE(actual == number_t<10>("678", 3));
     REQUIRE(not actual.is_negative());
+}
+
+TEST_CASE("smaller - bigger", "[sub]") {
+    number_t<10> l("20", 2);
+    number_t<10> r("678", 3);
+    number_t<10> actual = l - r;
+    REQUIRE(actual == number_t<10>("658", 3));
+    REQUIRE(actual.is_negative());
 }
 
 TEST_CASE("multiplication 1", "[mult]") {
@@ -202,6 +210,9 @@ TEST_CASE("multiplication and addition", "[mult]") {
     number_t<10> r{"231", 3};
     number_t<10> res = (l + r) * (l - r);
 
+    std::cout << "HERE- " << (l - r) << std::endl;
+    std::cout << "HERE+ " << (l + r) << std::endl;
+
     REQUIRE((l-r).is_negative());
     REQUIRE(not (l+r).is_negative());
     REQUIRE(number_t<10>("53000", 5) == res);
@@ -231,11 +242,11 @@ TEST_CASE("big numbers 1 (32base)", "[mult]") {
 }
 
 TEST_CASE("big numbers 2 (32base)", "[mult]") {
-    number_t<32> l{"14PC0MJ", 7};
-    number_t<32> r{"TDSQ5H", 6};
-    number_t<32> res = l * r;
+    number_t<32> l{"14PC0MJ", 7}; // 1234567891
+    number_t<32> r{"TDSQ5H", 6};  // 987654321
+    number_t<32> res = l * r;     // 1219326312114007011 --> 11QVAQ89DFAV3
 
-    REQUIRE(number_t<32>("AI967FIRV491T", 13) == res);
+    REQUIRE(number_t<32>("11QVAQ89DFAV3", 13) == res);
     REQUIRE(not res.is_negative());
 }
 
@@ -277,11 +288,32 @@ const char * l = "12658283749141197904324438922450574486707813438225783144157591
 const char * r = "7358962464594238631920301985037411448944675896428422499770454955441471864955969199908607778539748771241223112222964042489519660108266830409793540041254201127727724812109964048481907106805212095348248297828065464619022448330620883612305083852382524015";
 
 const char * expected = "9315183497611330883146766583804165932087484831792626108317011103375088254951213374405863278113105530481553699528875570843645745570938639788785975040219956587540836292710471590081885761045661035777138286960146359698138152794937162948804354382435627616719452135777975248653743553516421822072790702790880837453106793585313806904958156208312507080531653121505899645703622407320200143380842634765748867685513146077982120070558752613216065513118741815905516975577750891684634989047153858151866366995058075";
+const char * expected_square = "-52552007080569189457509291237342673422559104112502912557859955352245263171564006401600852635051216891031309226716374949863992869369840031138232826586548299504790382313162750077206050003587021862430448857275091208156376794189202159960511740036419541870623981758368383059949625085647289518466260645039779098910935699127166689235669558356576852519294498439814176139687824696782971697639206955660754753765574617474294933822121884672208186209824467824325046689829866851315136195438991085751289820885988200";
 
 TEST_CASE("mult_d", "[mult]") {
-    number_t<10> ll{l, strlen(l) - 1};
-    number_t<10> rr{r, strlen(r) - 1};
+    number_t<10> ll{l, strlen(l)};
+    number_t<10> rr{r, strlen(r)};
     number_t<10> res = ll * rr;
+    REQUIRE(number_t<10>{expected, strlen(expected)} == res);
 
-    REQUIRE(number_t<10>{expected, strlen(expected) - 1} == res);
+    res = (ll + rr) * (ll - rr);
+    REQUIRE(number_t<10>{expected_square, strlen(expected_square)} == res);
+}
+
+
+const char * l1 = "5L1AJ62HKSBOB6V9TSU9CLPHSMRGDOJ3T61FRTS2EBG32HJ4QMVFVLCSIVO1UEC60L044A45B3KLD8QQOB123IOO45K30V4P4COPMFCILHOU8DDNJO48KV5FDD1PLHLHQ6GF32QOG2AV4P61VENQ66DF3768QGFLJICNCL";
+const char * r1 = "41G1QK";
+
+const char * expected1 = "MSL6OALBR175TRP685O5DV6SP4EO736BHQ032NSQEN3K0KIKJJN6L0IB3E7O64KSOO2HLUBE1H4E4P0ANQQ2SN9LF5C0T7VTCBQTMC7GC5S56OLH81ELIUV1ABO5AOECN1FDN5SV63OHG59B5ESOOFBS721M0BJBH5LFL9HRHV4";
+const char * expected_square1 = "";
+
+
+TEST_CASE("mult_d (32base)", "[mult]") {
+    number_t<32> ll{l1, strlen(l1)};
+    number_t<32> rr{r1, strlen(r1)};
+    number_t<32> res = ll * rr;
+
+    REQUIRE(number_t<32>{expected1, strlen(expected1)} == res);
+
+    res = (ll + rr) * (ll - rr);
 }

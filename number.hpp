@@ -17,22 +17,22 @@ class number_t {
     int32_t start;
     int32_t end;
 
-public:
+    public:
     number_t()
-	: negative(false), digits(0), start(0), end(0)
-	{}
+        : negative(false), digits(0), start(0), end(0)
+    {}
 
     number_t(const char * digits_, int32_t n)
         : negative(false), start(0), end(n-1)
     {
-	digits = new int8_t[n];
-	if(digits_[0] == '-') {
-	    negative = true;
-	    start = 1;
-	} else if(digits_[0] == '+') {
-	    negative = false;
-	    start = 1;
-	}
+        digits = new int8_t[n];
+        if(digits_[0] == '-') {
+            negative = true;
+            start = 1;
+        } else if(digits_[0] == '+') {
+            negative = false;
+            start = 1;
+        }
 
         for(int32_t i = start; i <= end; i++) {
             // no error checking - assuming that all input is correct
@@ -58,7 +58,7 @@ public:
         for(int32_t i = 0; i < size(); i++) {
             digits[i] = other.digits[other.start+i];
         }
-	negative = other.is_negative();
+        negative = other.is_negative();
     }
 
     ~number_t() {
@@ -74,7 +74,7 @@ public:
             for(int32_t i = other.start, j = 0; i <= other.end; i++, j++) {
                 digits[j] = other.digits[i];
             }
-	    negative = other.is_negative();
+            negative = other.is_negative();
         }
         return *this;
     }
@@ -108,11 +108,11 @@ public:
             out[j++] = '-';
         }
         for(int i = 0; i < size(); i++) {
-	    if(digits[start+i] == 0)
-		continue;
+            if(digits[start+i] == 0)
+                continue;
             out[j++] = to_printable(digits[start+i]);
         }
-	out[j] = '\0';
+        out[j] = '\0';
     }
 
     number_t multByPowerOfBase(int n) const {
@@ -150,93 +150,94 @@ public:
         number_t result(n+1);
         bool carry = false;
 
-	if(lhs.is_negative() and not rhs.is_negative()) {
-	    number_t r = lhs;
-	    r.negative = false;
-	    result = r - rhs;
-	    if(result.is_negative())
-		result.negative = false;
-	    else
-		result.negative = true;
-	} else if(not lhs.is_negative() and rhs.is_negative()) {
-	    number_t r = rhs;
-	    r.negative = false;
-	    result = lhs - r;
-	} else {
-	    int32_t k = result.end;
-	    int32_t i = lhs.end;
-	    int32_t j = rhs.end;
-	    for(; i >= lhs.start and j >= rhs.start; i--, j--) {
-		int8_t tmp = (carry ? 1 : 0) + lhs.digits[i] + rhs.digits[j];
-		carry = (tmp / BASE) > 0;
-		tmp = tmp % BASE;
-		result.digits[k--] = tmp;
-	    }
-	    for(; i >= lhs.start; i--) {
-		int8_t tmp = (carry ? 1 : 0) + lhs.digits[i];
-		carry = (tmp / BASE) == 1;
-		tmp = tmp % BASE;
-		result.digits[k--] = tmp;
-	    }
-	    for(; j >= rhs.start; j--) {
-		int8_t tmp = (carry ? 1 : 0) + rhs.digits[j];
-		carry = (tmp / BASE) == 1;
-		tmp = tmp % BASE;
-		result.digits[k--] = tmp;
-	    }
+        if(lhs.is_negative() and not rhs.is_negative()) {
+            number_t r = lhs;
+            r.negative = false;
+            result = r - rhs;
+            if(result.is_negative())
+                result.negative = false;
+            else
+                result.negative = true;
+        } else if(not lhs.is_negative() and rhs.is_negative()) {
+            number_t r = rhs;
+            r.negative = false;
+            result = lhs - r;
+        } else {
+            int32_t k = result.end;
+            int32_t i = lhs.end;
+            int32_t j = rhs.end;
+            for(; i >= lhs.start and j >= rhs.start; i--, j--) {
+                int8_t tmp = (carry ? 1 : 0) + lhs.digits[i] + rhs.digits[j];
+                carry = (tmp / BASE) > 0;
+                tmp = tmp % BASE;
+                result.digits[k--] = tmp;
+            }
+            for(; i >= lhs.start; i--) {
+                int8_t tmp = (carry ? 1 : 0) + lhs.digits[i];
+                carry = (tmp / BASE) == 1;
+                tmp = tmp % BASE;
+                result.digits[k--] = tmp;
+            }
+            for(; j >= rhs.start; j--) {
+                int8_t tmp = (carry ? 1 : 0) + rhs.digits[j];
+                carry = (tmp / BASE) == 1;
+                tmp = tmp % BASE;
+                result.digits[k--] = tmp;
+            }
 
-	    result.digits[0] = (carry ? 1 : 0);
-	    result.start = (carry ? 0 : 1);
+            result.digits[0] = (carry ? 1 : 0);
+            result.start = (carry ? 0 : 1);
 
-	    if(rhs.is_negative() and lhs.is_negative())
-		result.negative = true;
-	}
+            if(rhs.is_negative() and lhs.is_negative())
+                result.negative = true;
+        }
         return result;
     }
 
     friend number_t operator-(const number_t & lhs, const number_t & rhs) {
-	number_t l, r, result;
-	if(lhs.is_negative() and rhs.is_negative()) {
-	    // ==> rhs - lhs
-	    l = rhs; l.negative = false;
-	    r = lhs; r.negative = false;
-	} else if(lhs.is_negative() and not rhs.is_negative()) {
-	    // - (lhs + rhs)
-	    l = rhs; l.negative = false;
-	    r = lhs; r.negative = false;
-	    result = l+r;
-	    result.negative = true;
-	    return result;
-	} else if(not lhs.is_negative() and rhs.is_negative()) {
-	    // lhs + rhs
-	    l = lhs; l.negative = false;
-	    r = rhs; r.negative = false;
-	    result = l+r;
-	    result.negative = false;
-	    return result;
-	} else { // not lhs.is_negative() and not rhs.is_negative()
-	    // lhs - rhs
-	    l = lhs; l.negative = false;
-	    r = rhs; r.negative = false;
-	}
+        number_t l, r, result;
+        if(lhs.is_negative() and rhs.is_negative()) {
+            // ==> rhs - lhs
+            l = rhs; l.negative = false;
+            r = lhs; r.negative = false;
+        } else if(lhs.is_negative() and not rhs.is_negative()) {
+            // - (lhs + rhs)
+            l = rhs; l.negative = false;
+            r = lhs; r.negative = false;
+            result = l+r;
+            result.negative = true;
+            return result;
+        } else if(not lhs.is_negative() and rhs.is_negative()) {
+            // lhs + rhs
+            l = lhs; l.negative = false;
+            r = rhs; r.negative = false;
+            result = l+r;
+            result.negative = false;
+            return result;
+        } else { // not lhs.is_negative() and not rhs.is_negative()
+            // lhs - rhs
+            l = lhs; l.negative = false;
+            r = rhs; r.negative = false;
+        }
 
-        int32_t n = max(lhs.size(), rhs.size());
-	result = l + r.complement(n);
-        if(result.digits[0] == 1) {
+        int32_t n = max(l.size(), r.size());
+        result = l + r.complement(n);
+
+        if(result.size() > n /*result.digits[0] == 1*/) {
             bool carry = true;
             for(int32_t i = result.end; i > 0; i--) {
                 int8_t t = (result.digits[i] + (carry ? 1 : 0));
                 carry = t >= BASE;
                 result.digits[i] = t % BASE;
             }
+            result.digits[0] = 0;
+            result.start = 1;
         } else {
             for(int32_t i = result.end; i >= result.start; i--) {
                 result.digits[i] = (BASE - 1) - result.digits[i];
             }
             result.negative = true;
         }
-        result.digits[0] = 0;
-        result.start = 1;
 
         return result;
     }
@@ -284,9 +285,9 @@ public:
             number_t z2 = a * c;
 
             number_t result = z2.multByPowerOfBase(2 * m2) + (z1-z2-z0).multByPowerOfBase(m2) + z0;
-	    result.negative = (lhs.negative and not rhs.negative) or (not lhs.negative and rhs.negative);
+            result.negative = (lhs.negative and not rhs.negative) or (not lhs.negative and rhs.negative);
 
-	    return result;
+            return result;
         }
     }
 
